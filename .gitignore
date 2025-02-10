@@ -1,0 +1,6 @@
+.env
+.database
+.DS_Store
+~*
+\#*
+.ssh_connection
