@@ -1,0 +1,324 @@
+openapi: 3.0.0
+info:
+  title: ToDo List API
+  description: API для управления списками задач и аутентификацией пользователей.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api # Локальный сервер
+    description: Development server
+tags:
+  - name: Auth
+    description: Аутентификация пользователей
+  - name: Lists
+    description: Управление списками задач
+  - name: Items
+    description: Управление задачами в списках
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID пользователя
+        name:
+          type: string
+          description: Имя пользователя
+        username:
+          type: string
+          description: Логин пользователя
+        password_hash:
+          type: string
+          description: Хеш пароля пользователя
+      required:
+        - username
+        - password_hash
+    TodoList:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID списка задач
+        title:
+          type: string
+          description: Название списка
+        description:
+          type: string
+          description: Описание списка
+      required:
+        - title
+    TodoItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID задачи
+        title:
+          type: string
+          description: Название задачи
+        description:
+          type: string
+          description: Описание задачи
+        done:
+          type: boolean
+          description: Статус выполнения задачи
+      required:
+        - title
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Регистрация нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        '201':
+          description: Пользователь успешно зарегистрирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Неверные данные
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Авторизация пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT токен
+        '401':
+          description: Неверные учетные данные
+  /lists:
+    get:
+      tags:
+        - Lists
+      summary: Получение всех списков задач текущего пользователя
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Списки успешно получены
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TodoList'
+        '401':
+          description: Необходима авторизация
+    post:
+      tags:
+        - Lists
+      summary: Создание нового списка задач
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoList'
+      responses:
+        '201':
+          description: Список успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoList'
+        '400':
+          description: Неверные данные
+  /lists/{id}:
+    put:
+      tags:
+        - Lists
+      summary: Обновление существующего списка
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoList'
+      responses:
+        '200':
+          description: Список успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoList'
+        '404':
+          description: Список не найден
+    delete:
+      tags:
+        - Lists
+      summary: Удаление списка задач
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Список успешно удален
+        '404':
+          description: Список не найден
+  /lists/{list_id}/items:
+    get:
+      tags:
+        - Items
+      summary: Получение всех задач из списка
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: list_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Задачи успешно получены
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TodoItem'
+        '404':
+          description: Список не найден
+    post:
+      tags:
+        - Items
+      summary: Добавление новой задачи в список
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: list_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoItem'
+      responses:
+        '201':
+          description: Задача успешно добавлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoItem'
+        '400':
+          description: Неверные данные
+  /lists/{list_id}/items/{item_id}:
+    put:
+      tags:
+        - Items
+      summary: Обновление существующей задачи
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: list_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoItem'
+      responses:
+        '200':
+          description: Задача успешно обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoItem'
+        '404':
+          description: Задача или список не найдены
+    delete:
+      tags:
+        - Items
+      summary: Удаление задачи из списка
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: list_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Задача успешно удалена
+        '404':
+          description: Задача или список не найдены
+securitySchemes:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT
