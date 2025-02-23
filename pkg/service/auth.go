@@ -2,14 +2,13 @@ package service
 
 import (
 	"crypto/sha1"
-	_"errors"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/ivasdtmbb/todo_list_project/internal/todo"
 	"github.com/ivasdtmbb/todo_list_project/pkg/repository"
-	"errors"
 )
 
 const (
