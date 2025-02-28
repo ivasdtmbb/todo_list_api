@@ -2,9 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "../../../00_SPBPU_Politech_data/16_ML_Yandex"
 		}
 	],
 	"settings": {}

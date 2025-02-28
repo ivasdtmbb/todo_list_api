@@ -1,7 +1,6 @@
 package service
 
 import (
-	//"github.com/ivasdtmbb/todo_list_project"
 	"github.com/ivasdtmbb/todo_list_project/internal/todo"
 	"github.com/ivasdtmbb/todo_list_project/pkg/repository"
 )
